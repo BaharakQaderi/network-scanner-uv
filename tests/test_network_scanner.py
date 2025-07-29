@@ -127,10 +127,17 @@ class TestNetworkAPI:
     """Test cases for FastAPI endpoints"""
     
     def test_root_endpoint(self, client):
-        """Test root endpoint"""
-        response = client.get("/")
+        """Test root endpoint redirects to scanner"""
+        response = client.get("/", follow_redirects=False)
+        assert response.status_code == 307  # Redirect status code
+        assert response.headers["location"] == "/scanner"
+    
+    def test_scanner_endpoint(self, client):
+        """Test scanner endpoint returns HTML"""
+        response = client.get("/scanner")
         assert response.status_code == 200
-        assert "FastAPI Network Scanner is running" in response.json()["message"]
+        assert "Network Scanner" in response.text
+        assert "text/html" in response.headers["content-type"]
     
     def test_health_endpoint(self, client):
         """Test health check endpoint"""
